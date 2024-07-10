@@ -17,7 +17,7 @@ def generate_date_list(start, end):
     delta = end - start  # timedelta
     return [start + timedelta(days=i) for i in range(delta.days + 1)]
 
-def layout_headers(headers, stat_df, num_of_players, cols_per_row=3):
+def layout_headers(headers, stat_df, num_of_players, cols_per_row=2):
     # Calculate how many rows are needed
     row_count = (len(headers) + cols_per_row - 1) // cols_per_row  # This ensures all headers are included
 
@@ -29,33 +29,31 @@ def layout_headers(headers, stat_df, num_of_players, cols_per_row=3):
         for j in range(cols_per_row):
             index = i * cols_per_row + j
             if index < len(headers):
-                # Use a column to display a header
-                cols[j].write(headers[index])
-
                 if headers[index] in stat_df.columns:
-                    # Display data from DataFrame under the header
-                    # cols[j].write(stat_df[headers[index]])
                     temp_df = stat_df.copy()
                     temp_df = temp_df.sort_values(by=headers[index], ascending=False)
                     temp_df = temp_df[['Name', headers[index]]].head(num_of_players)
 
-                    fig, ax = plt.subplots()
+                    fig, ax = plt.subplots(figsize=(10, 6))
 
-                    bars = ax.barh(temp_df['Name'].to_list()[::-1],temp_df[headers[index]].to_list()[::-1], color='skyblue')
+                    colors = plt.cm.viridis(np.linspace(0, 1, num_of_players))
+                    bars = ax.barh(temp_df['Name'].to_list()[::-1], temp_df[headers[index]].to_list()[::-1], color=colors)
                     
                     for bar in bars:
                         value = bar.get_width()
-                        ax.text(value, bar.get_y() + bar.get_height() / 2, f'{value}', va='center')
+                        ax.text(value, bar.get_y() + bar.get_height() / 2, f'{value:.2f}', va='center', ha='left', fontweight='bold')
 
                     # Customizations
-                    ax.set_xlabel(headers[index])
-                    ax.set_ylabel('Name')
-                    ax.set_title(f'Top {num_of_players} in {headers[index]}')
+                    ax.set_xlabel(headers[index], fontsize=12)
+                    ax.set_ylabel('Name', fontsize=12)
+                    ax.set_title(f'Top {num_of_players} in {headers[index]}', fontsize=14, fontweight='bold')
+                    ax.tick_params(axis='both', which='major', labelsize=10)
+
+                    plt.tight_layout()
 
                     # Show plot in Streamlit
                     cols[j].pyplot(fig)
-
-                    #cols[j].dataframe(temp_df)
+                    plt.close(fig)  # Close the figure to free up memory
 
             else:
                 # If no more headers, break out of the loop
