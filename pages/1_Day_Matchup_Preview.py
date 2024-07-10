@@ -120,47 +120,32 @@ home_team_l5 = []
 
 away_wins = 0
 home_wins = 0
-#Edit code here
+# Edit code here
 
-for index, r in away_team_games[:numGames].iterrows():
-    if r['isWinner']:
-        winner = 'W'
-        away_wins += 1
-    else:
-        winner = 'L'
-    if r['Team'] == r['away_name']:
-        homeAway = '@'
-        opposingPitcher = r['home_probable_pitcher']
-    else:
-        homeAway = 'vs.'
-        opposingPitcher = r['away_probable_pitcher']
+def create_game_summary(r):
+    winner = 'W' if r['isWinner'] else 'L'
+    homeAway = '@' if r['Team'] == r['away_name'] else 'vs.'
+    opposingPitcher = r['home_probable_pitcher'] if r['Team'] == r['away_name'] else r['away_probable_pitcher']
+    return f"{winner} {r['away_score']}-{r['home_score']} {homeAway} {r['Opponent']}"
 
-    
-    away_team_l5.append(f"{winner} {r['away_score']}-{r['home_score']} {homeAway} {r['Opponent']} with Starting Pitcher: {opposingPitcher}")
+away_team_l5 = [create_game_summary(r) for _, r in away_team_games[:numGames].iterrows()]
+home_team_l5 = [create_game_summary(r) for _, r in home_team_games[:numGames].iterrows()]
 
+away_wins = sum(1 for game in away_team_l5 if game.startswith('W'))
+home_wins = sum(1 for game in home_team_l5 if game.startswith('W'))
 
-for index, r in home_team_games[:numGames].iterrows():
-    if r['isWinner']:
-        winner = 'W'
-        home_wins += 1
-    else:
-        winner = 'L'
-    if r['Team'] == r['away_name']:
-        homeAway = '@'
-        opposingPitcher = r['home_probable_pitcher']
-    else:
-        homeAway = 'vs.'
-        opposingPitcher = r['away_probable_pitcher']
-
-    
-    home_team_l5.append(f"{winner} {r['away_score']}-{r['home_score']} {homeAway} {r['Opponent']} with Starting Pitcher: {opposingPitcher}")
-
-
-col1,col2 = st.columns(2)
+col1, col2 = st.columns(2)
 with col1:
-    st.table(pd.DataFrame(away_team_l5, columns=[f"{away_team} {away_wins}-{len(away_team_l5) - away_wins}"], index=None))
+    st.subheader(f"{away_team} {away_wins}-{numGames - away_wins}")
+    for game in away_team_l5:
+        st.markdown(f"- {game}")
+
 with col2:
-    st.table(pd.DataFrame(home_team_l5, columns=[f"{home_team} {home_wins}-{len(home_team_l5) - home_wins}"], index=None))  
+    st.subheader(f"{home_team} {home_wins}-{numGames - home_wins}")
+    for game in home_team_l5:
+        st.markdown(f"- {game}")
+
+st.markdown("---")
 
 
 
