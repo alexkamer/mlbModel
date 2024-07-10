@@ -286,15 +286,26 @@ pitchFilter = st.checkbox(label="Filter DataFrames to Road/Home only?")
 
 
 
-col1,col2 = st.columns(2)
-with col1:
-    if pitchFilter:
-        st.dataframe(away_pitcher_df[away_pitcher_df['away_probable_pitcher'] == away_pitcher][['winning_team', 'winning_pitcher','Team', 'date', 'Name', 'Opponent', 'away_score', 'home_score']], hide_index=True)
-    else:
-        st.dataframe(away_pitcher_df[['winning_team', 'winning_pitcher','Team', 'date', 'Name', 'Opponent', 'away_score', 'home_score']], hide_index=True)
-with col2:
-    if pitchFilter:
-        st.dataframe(home_pitcher_df[home_pitcher_df['home_probable_pitcher'] == home_pitcher][['winning_team', 'winning_pitcher','Team', 'date', 'Name', 'Opponent', 'away_score', 'home_score']], hide_index=True)
+def format_pitcher_df(df):
+    df = df[['date', 'Team', 'Opponent', 'away_score', 'home_score', 'winning_team']]
+    df['Result'] = df.apply(lambda row: 'W' if row['winning_team'] == row['Team'] else 'L', axis=1)
+    df['Score'] = df.apply(lambda row: f"{row['away_score']}-{row['home_score']}", axis=1)
+    df['Game'] = df.apply(lambda row: f"{row['Result']} {row['Score']} {'vs' if row['Team'] == row['Opponent'] else '@'} {row['Opponent']}", axis=1)
+    return df[['date', 'Game']]
 
+col1, col2 = st.columns(2)
+with col1:
+    st.subheader(f"{away_pitcher} Recent Games")
+    if pitchFilter:
+        away_df = format_pitcher_df(away_pitcher_df[away_pitcher_df['away_probable_pitcher'] == away_pitcher])
     else:
-        st.dataframe(home_pitcher_df[['winning_team', 'winning_pitcher','Team', 'date', 'Name', 'Opponent', 'away_score', 'home_score']], hide_index=True)
+        away_df = format_pitcher_df(away_pitcher_df)
+    st.table(away_df.set_index('date'))
+
+with col2:
+    st.subheader(f"{home_pitcher} Recent Games")
+    if pitchFilter:
+        home_df = format_pitcher_df(home_pitcher_df[home_pitcher_df['home_probable_pitcher'] == home_pitcher])
+    else:
+        home_df = format_pitcher_df(home_pitcher_df)
+    st.table(home_df.set_index('date'))
