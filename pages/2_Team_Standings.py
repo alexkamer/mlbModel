@@ -1,10 +1,29 @@
 import streamlit as st
-st.title('MLB Team Standings')
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
-import altair as alt
+import base64
+from PIL import Image
+import io
+
+# Custom CSS
+st.markdown("""
+<style>
+    .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
+        font-size:1.5rem;
+    }
+    .dataframe {
+        font-size: 12px;
+    }
+    .dataframe td, .dataframe th {
+        text-align: center;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Header image
+header_image_url = "https://upload.wikimedia.org/wikipedia/en/thumb/a/a6/Major_League_Baseball_logo.svg/1200px-Major_League_Baseball_logo.svg.png"
+st.image(header_image_url, width=300)
+
+st.title('MLB Team Standings')
 
 
 @st.cache_resource
@@ -13,6 +32,21 @@ def load_data(filepath):
     return data
 
 df = load_data('datasets/record_df.csv')
+
+@st.cache_resource
+def get_team_logo(team_name):
+    # This function should return the URL of the team logo
+    # You'll need to create a dictionary mapping team names to logo URLs
+    team_logos = {
+        "New York Yankees": "https://example.com/yankees_logo.png",
+        "Boston Red Sox": "https://example.com/redsox_logo.png",
+        # Add more teams here
+    }
+    return team_logos.get(team_name, "https://example.com/default_logo.png")
+
+def add_logo(team_name):
+    logo_url = get_team_logo(team_name)
+    return f'<img src="{logo_url}" width="30">&nbsp;{team_name}'
 
 def format_percent(df):
     for col in df.columns:
@@ -84,4 +118,20 @@ for tab, filter_str in zip(tabs, tabs_filters.values()):
             display_df = standing_df[standing_df['Division'].str.contains(filter_str, case=False, na=False)].copy()
 
         display_df = display_df[['Team', 'standingSummary','Record', 'OT Record']]
-        st.dataframe(display_df, hide_index=True)
+        display_df['Team'] = display_df['Team'].apply(add_logo)
+        
+        # Function to color code win-loss record
+        def color_record(val):
+            wins, losses = map(int, val.split('-'))
+            if wins > losses:
+                return 'color: green'
+            elif wins < losses:
+                return 'color: red'
+            else:
+                return 'color: black'
+
+        # Apply styling
+        styled_df = display_df.style.applymap(color_record, subset=['Record'])
+        
+        # Display styled dataframe
+        st.dataframe(styled_df.hide_index(), height=600, use_container_width=True)
