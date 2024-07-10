@@ -1,27 +1,42 @@
 import streamlit as st
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
-import altair as alt
+from datetime import datetime
 import requests
 from io import StringIO
-import concurrent.futures
 
 pd.set_option('display.max_columns', 500)
 
-@st.cache_resource
+@st.cache_data
 def load_data(filepath):
     data = pd.read_csv(filepath)
     return data
 
 @st.cache_data
-def create_organized_prop_df(batter_boxscores, batter_props, actual_num_of_games):
+def load_props_data(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.content.decode('utf-8')
+        data_io = StringIO(data)
+        props_df = pd.read_csv(data_io)
+        props_df = props_df.drop_duplicates(['prop_id'], keep='last')
+        props_df = props_df[props_df['league'] == 'MLB']
+        current_date = datetime.now().strftime('%Y-%m-%d')
+        current_day_props = props_df[props_df['start_time'] == current_date]
+        batter_props = current_day_props[~current_day_props['position'].isin(['P', 'SP'])]
+        batter_props = batter_props.sort_values(by=['player_name','stat_type','odds_type'])
+        batter_props = batter_props.drop_duplicates()
+        return batter_props
+    else:
+        st.error(f"Failed to retrieve data: status code {response.status_code}")
+        return pd.DataFrame()
+
+@st.cache_data
+def create_organized_prop_df(_batter_boxscores, _batter_props, _actual_num_of_games):
     organized_prop_df = []
-    for player_name in batter_props['player_name'].unique():
-        if player_name in batter_boxscores['Name'].to_list():
-            player_props = batter_props[batter_props['player_name'] == player_name]
-            player_boxscore = batter_boxscores[batter_boxscores['Name'] == player_name][::-1]
+    for player_name in _batter_props['player_name'].unique():
+        if player_name in _batter_boxscores['Name'].to_list():
+            player_props = _batter_props[_batter_props['player_name'] == player_name]
+            player_boxscore = _batter_boxscores[_batter_boxscores['Name'] == player_name][::-1]
 
             for index, row in player_props.iterrows():
                 prop_dict = {
@@ -42,7 +57,7 @@ def create_organized_prop_df(batter_boxscores, batter_props, actual_num_of_games
 
                 stat_list = player_boxscore[row['stat_type']].to_list()
 
-                number_of_games = actual_num_of_games
+                number_of_games = _actual_num_of_games
 
                 if len(stat_list) < (number_of_games + 1):
                     number_of_games = len(stat_list)
@@ -56,7 +71,7 @@ def create_organized_prop_df(batter_boxscores, batter_props, actual_num_of_games
                 prop_dict['Hit Rate'] = f"{round(prop_dict['Hit'] / prop_dict['Game Size'] * 100,2)}%"
                 prop_dict['Push Rate'] = f"{round(prop_dict['Push'] / prop_dict['Game Size'] * 100,2)}%"
 
-                for i in range(1, actual_num_of_games+1):
+                for i in range(1, _actual_num_of_games+1):
                     try:
                         prop_dict[str(i)] = stat_list[i-1]
                     except:
@@ -66,10 +81,8 @@ def create_organized_prop_df(batter_boxscores, batter_props, actual_num_of_games
 
     return pd.DataFrame(organized_prop_df)
 
-st.title('Batter Prize Picks Analysis')
-
+# Load and preprocess data
 batter_boxscores = load_data('datasets/complex_batters.csv')
-
 batter_boxscores = batter_boxscores.rename(columns={
     'h' : 'Hits',
     'Batter Fantasy Score' : 'Hitter Fantasy Score',
@@ -85,37 +98,10 @@ batter_boxscores = batter_boxscores.rename(columns={
     'sb' : 'Stolen Bases'
 })
 
-url = 'http://192.168.1.200/data/data.csv'
-url = 'http://192.168.1.200/data/all_prop_data.csv'
+batter_props = load_props_data('http://192.168.1.200/data/all_prop_data.csv')
 
-
-
-response = requests.get(url)
-# Check if the request was successful
-if response.status_code == 200:
-    data = response.content.decode('utf-8')
-else:
-    print(f"Failed to retrieve data: status code {response.status_code}")
-    data = None
-if data:
-    # Convert string data to StringIO object
-    data_io = StringIO(data)
-    # Create DataFrame
-    props_df = pd.read_csv(data_io)
-
-props_df = props_df.drop_duplicates(['prop_id'], keep='last')
-props_df = props_df[props_df['league'] == 'MLB']
-
-current_date = datetime.now().strftime('%Y-%m-%d')
-
-current_day_props = props_df[props_df['start_time'] == current_date]
-
-pitcher_props = current_day_props[current_day_props['position'].isin(['P','SP'])]
-batter_props = current_day_props[~current_day_props['position'].isin(['P', 'SP'])]
-
-batter_props = batter_props.sort_values(by=['player_name','stat_type','odds_type'])
-batter_props = batter_props.drop_duplicates()
-
+# Streamlit app
+st.title('Batter Prize Picks Analysis')
 
 actual_num_of_games = st.select_slider(
     'Select the number of games for the sample size',
