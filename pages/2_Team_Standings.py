@@ -1,11 +1,12 @@
 import streamlit as st
-st.title('MLB Team Standings')
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
 import altair as alt
 
+st.set_page_config(page_title="MLB Team Standings", layout="wide")
+st.title('MLB Team Standings')
 
 @st.cache_resource
 def load_data(filepath):
@@ -20,8 +21,35 @@ def format_percent(df):
             df[col] = df[col].apply(lambda x: "{:.2%}".format(x))
     return df
 
+def style_dataframe(df):
+    return df.style.set_properties(**{
+        'background-color': 'lightgrey',
+        'color': 'black',
+        'border-color': 'white'
+    }).set_table_styles([
+        {'selector': 'th', 'props': [('background-color', '#4CAF50'), ('color', 'white')]},
+        {'selector': 'tr:nth-of-type(even)', 'props': [('background-color', '#f2f2f2')]},
+    ]).format(precision=2)
 
-st.dataframe(df)
+# Allow users to select columns
+all_columns = df.columns.tolist()
+selected_columns = st.multiselect("Select columns to display", all_columns, default=["Team", "standingSummary", "total_wins", "total_losses", "total_winPercent"])
+
+# Display the styled dataframe with selected columns
+if selected_columns:
+    styled_df = style_dataframe(df[selected_columns])
+    st.dataframe(styled_df, use_container_width=True)
+else:
+    st.warning("Please select at least one column to display.")
+
+# Add a download button for the full dataframe
+csv = df.to_csv(index=False)
+st.download_button(
+    label="Download full data as CSV",
+    data=csv,
+    file_name="mlb_standings.csv",
+    mime="text/csv",
+)
 
 standings_filter = st.selectbox(
     options=['Both', 'Home', 'Away'],
