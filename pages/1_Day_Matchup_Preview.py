@@ -119,6 +119,13 @@ home_team_games = pitcher_boxscores[(pitcher_boxscores['isStarter']) & (pitcher_
 
 numGames = 5
 
+col1, col2 = st.columns(2)
+
+with col1:
+    st.header(f"Team's Records in last {numGames} games:")
+with col2:
+    numGames = st.slider(label='Select the number of games: ', min_value=1, max_value=20, value=5, step=1)
+
 away_team_l5 = []
 home_team_l5 = []
 
@@ -130,24 +137,42 @@ def create_game_summary(r, mlb_team_logo_df):
     winner = 'W' if r['isWinner'] else 'L'
     homeAway = '@' if r['Team'] == r['away_name'] else 'vs.'
     opposingPitcher = r['home_probable_pitcher'] if r['Team'] == r['away_name'] else r['away_probable_pitcher']
-    return f"{winner} {r['away_score']}-{r['home_score']} {homeAway} {r['Opponent']}"
+    my_dict = {
+        "resultString" : f"{winner} {r['away_score']}-{r['home_score']} {homeAway} {r['Opponent']}", 
+        'opponent_logo' :mlb_team_logo_df[mlb_team_logo_df['Team'] == r['Opponent']]['Logos'].iloc[0]
+        }
 
+    return my_dict
 away_team_l5 = [create_game_summary(r, mlb_team_logo_df) for _, r in away_team_games[:numGames].iterrows()]
 home_team_l5 = [create_game_summary(r, mlb_team_logo_df) for _, r in home_team_games[:numGames].iterrows()]
 
-away_wins = sum(1 for game in away_team_l5 if game.startswith('W'))
-home_wins = sum(1 for game in home_team_l5 if game.startswith('W'))
+away_wins = sum(1 for game in away_team_l5 if game['resultString'].startswith('W'))
+home_wins = sum(1 for game in home_team_l5 if game['resultString'].startswith('W'))
 
 col1, col2 = st.columns(2)
 with col1:
-    st.markdown(f"<h3><img src='{away_logo}&w=30' style='vertical-align: middle'> {away_team} {away_wins}-{numGames - away_wins}</h3>", unsafe_allow_html=True)
+    st.markdown(f"""
+    <h4><img src="{away_logo}" style="width: 10%; height: 10%;"> <b>{away_team} {away_wins}-{numGames - away_wins}</b></h4>
+    """, unsafe_allow_html=True)
+
+
     for game in away_team_l5:
-        st.markdown(f"- {game}")
+        st.markdown(f"""
+        <p>- {game['resultString']} <img src="{game['opponent_logo']}" style="width: 5%; height: 5%;"> </p>
+        """, unsafe_allow_html=True)
+
+
 
 with col2:
-    st.markdown(f"<h3><img src='{home_logo}&w=30' style='vertical-align: middle'> {home_team} {home_wins}-{numGames - home_wins}</h3>", unsafe_allow_html=True)
+    st.markdown(f"""
+    <h4><img src="{home_logo}" style="width: 10%; height: 10%;"> <b>{home_team} {home_wins}-{numGames - home_wins}</b></h4>
+    """, unsafe_allow_html=True)
+
+
     for game in home_team_l5:
-        st.markdown(f"- {game}")
+        st.markdown(f"""
+        <p>- {game['resultString']} <img src="{game['opponent_logo']}" style="width: 5%; height: 5%;"> </p>
+        """, unsafe_allow_html=True)
 
 st.markdown("---")
 
