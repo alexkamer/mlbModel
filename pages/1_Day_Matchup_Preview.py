@@ -114,7 +114,7 @@ with outer_1:
 
     # Display summary statistics
     st.subheader("Summary Statistics")
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3,col4 = st.columns(4)
     col1.metric("***Average Runs per Game***", average_runs)
     col2.metric(f"***{away_team} Wins***", away_wins)
     col3.metric(f"***{home_team} Wins***", home_wins)
@@ -124,7 +124,7 @@ with outer_1:
     display_head_to_head['Winner'] = display_head_to_head.apply(lambda row: row['away_name'] if row['winning_team'] == row['away_name'] else row['home_name'], axis=1)
     display_head_to_head['Run Total'] = display_head_to_head['away_score'] + display_head_to_head['home_score']
     display_head_to_head['Run Diff'] = abs(display_head_to_head['home_score'] - display_head_to_head['away_score'])
-
+    col4.metric("***Average Run Differential***", round(display_head_to_head['Run Diff'].mean(),1))
     st.dataframe(
         display_head_to_head[['game_date', 'away_name', 'home_name', 'Score', 'Winner', 'Run Total', 'Run Diff', 'venue_name']],
         hide_index=True,
@@ -138,14 +138,14 @@ with outer_1:
             "venue_name": "Venue"
         }
     )
-    st.dataframe(display_head_to_head)
     for index, row in display_head_to_head.iterrows():
         st.markdown(
             f"""
             <div style="display: flex; align-items: center; justify-content: center;">
-                <img src="{mlb_team_logo_df[mlb_team_logo_df['Team'] == row['away_name']]['Logos'].iloc[0]}" style="width: 30px; height: 30px; margin-right: 10px;">
-                <span style="font-size: 18px;">{row['away_name']}	{row['away_score']} - {row['home_score']} {row['home_name']}</span>
-                <img src="{mlb_team_logo_df[mlb_team_logo_df['Team'] == row['home_name']]['Logos'].iloc[0]}" style="width: 30px; height: 30px; margin-left: 10px;">
+                <img src="{mlb_team_logo_df[mlb_team_logo_df['Team'] == row['away_name']]['Logos'].iloc[0]}" style="width: 40px; height: 40px; margin-right: 10px;">
+                <t></t>
+                <span style="font-size: 18px;">{row['away_name']} {row['away_score']} - {row['home_score']} {row['home_name']}</span>
+                <img src="{mlb_team_logo_df[mlb_team_logo_df['Team'] == row['home_name']]['Logos'].iloc[0]}" style="width: 40px; height: 40px; margin-left: 10px;">
             </div>
             """,
             unsafe_allow_html=True
