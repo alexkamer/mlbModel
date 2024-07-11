@@ -92,25 +92,47 @@ if currentHomeAway:
     head_to_head = basic_gamelogs[(basic_gamelogs['away_id'] == away_id) & (basic_gamelogs['home_id'] == home_id)].sort_values(by='game_datetime')
 else:
     head_to_head = basic_gamelogs[((basic_gamelogs['away_id'] == away_id) & (basic_gamelogs['home_id'] == home_id) | (basic_gamelogs['away_id'] == home_id) & (basic_gamelogs['home_id'] == away_id))].sort_values(by='game_datetime')
- 
 
 head_to_head_num_games = st.select_slider(options=range(1,len(head_to_head) + 1), label='Select the number of games: ')
 
 head_to_head = head_to_head[::-1]
-display_head_to_head = head_to_head[['game_date', 'away_name', 'home_name', 'home_probable_pitcher', 'away_probable_pitcher', 'away_score', 'home_score', 'venue_name', 'winning_team', 'losing_team']].copy()
+display_head_to_head = head_to_head[['game_date', 'away_name', 'home_name', 'home_probable_pitcher', 'away_probable_pitcher', 'away_score', 'home_score', 'venue_name', 'winning_team']].copy()
 display_head_to_head = display_head_to_head.head(head_to_head_num_games)
 
-average_runs = round((display_head_to_head['away_score'].sum() + display_head_to_head['home_score'].sum()) / head_to_head_num_games,2)
-st.write(f"Average runs per game in these samples: {average_runs}")
-st.write(f"{away_team}  {len(display_head_to_head[display_head_to_head['winning_team'] == away_team])} - {len(display_head_to_head[display_head_to_head['winning_team'] == home_team])}  {home_team}")
+# Calculate statistics
+average_runs = round((display_head_to_head['away_score'].sum() + display_head_to_head['home_score'].sum()) / head_to_head_num_games, 2)
+away_wins = len(display_head_to_head[display_head_to_head['winning_team'] == away_team])
+home_wins = len(display_head_to_head[display_head_to_head['winning_team'] == home_team])
 
+# Display summary statistics
+st.subheader("Summary Statistics")
+col1, col2, col3 = st.columns(3)
+col1.metric("Average Runs per Game", average_runs)
+col2.metric(f"{away_team} Wins", away_wins)
+col3.metric(f"{home_team} Wins", home_wins)
+
+# Prepare and display the head-to-head dataframe
+display_head_to_head['Score'] = display_head_to_head.apply(lambda row: f"{row['away_score']} - {row['home_score']}", axis=1)
+display_head_to_head['Winner'] = display_head_to_head.apply(lambda row: row['away_name'] if row['winning_team'] == row['away_name'] else row['home_name'], axis=1)
 display_head_to_head['Run Total'] = display_head_to_head['away_score'] + display_head_to_head['home_score']
 display_head_to_head['Run Diff'] = abs(display_head_to_head['home_score'] - display_head_to_head['away_score'])
-display_head_to_head['Home Team Won'] = display_head_to_head['winning_team'] == display_head_to_head['home_name']
 
+st.subheader("Head-to-Head Results")
+st.dataframe(
+    display_head_to_head[['game_date', 'away_name', 'home_name', 'Score', 'Winner', 'Run Total', 'Run Diff', 'venue_name']],
+    hide_index=True,
+    column_config={
+        "game_date": st.column_config.DateColumn("Date", format="MMM DD, YYYY"),
+        "away_name": "Away Team",
+        "home_name": "Home Team",
+        "Score": st.column_config.Column("Score (Away - Home)"),
+        "Run Total": st.column_config.NumberColumn("Total Runs"),
+        "Run Diff": st.column_config.NumberColumn("Run Difference"),
+        "venue_name": "Venue"
+    }
+)
 
-st.dataframe(display_head_to_head, hide_index=True)
-st.markdown("---")
+st.divider()
 
 
 
