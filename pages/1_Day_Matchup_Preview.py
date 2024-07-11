@@ -110,12 +110,14 @@ display_head_to_head['Home Team Won'] = display_head_to_head['winning_team'] == 
 
 
 st.dataframe(display_head_to_head, hide_index=True)
-
+st.markdown("---")
 
 
 
 away_team_games = pitcher_boxscores[(pitcher_boxscores['isStarter']) & (pitcher_boxscores['Team'] == away_team)][::-1]
 home_team_games = pitcher_boxscores[(pitcher_boxscores['isStarter']) & (pitcher_boxscores['Team'] == home_team)][::-1]
+
+
 
 numGames = 5
 
@@ -125,6 +127,7 @@ with col1:
     st.header(f"Team's Records in last {numGames} games:")
 with col2:
     numGames = st.slider(label='Select the number of games: ', min_value=1, max_value=20, value=5, step=1)
+
 
 away_team_l5 = []
 home_team_l5 = []
@@ -161,6 +164,8 @@ with col1:
         <p>- {game['resultString']} <img src="{game['opponent_logo']}" style="width: 5%; height: 5%;"> </p>
         """, unsafe_allow_html=True)
 
+
+
 with col2:
     st.markdown(f"""
     <h4><img src="{home_logo}" style="width: 10%; height: 10%;"> <b>{home_team} {home_wins}-{numGames - home_wins}</b></h4>
@@ -172,7 +177,7 @@ with col2:
         <p>- {game['resultString']} <img src="{game['opponent_logo']}" style="width: 5%; height: 5%;"> </p>
         """, unsafe_allow_html=True)
 
-st.divider()
+st.markdown("---")
 
 
 
@@ -315,7 +320,6 @@ pitchFilter = st.checkbox(label="Filter DataFrames to Road/Home only?")
 
 col1,col2 = st.columns(2)
 with col1:
-    st.dataframe
     if pitchFilter:
         st.dataframe(away_pitcher_df[away_pitcher_df['away_probable_pitcher'] == away_pitcher][['winning_team', 'winning_pitcher','Team', 'date', 'Name', 'Opponent', 'away_score', 'home_score']], hide_index=True)
     else:
