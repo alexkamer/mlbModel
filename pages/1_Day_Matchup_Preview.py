@@ -119,7 +119,9 @@ display_head_to_head['Winner'] = display_head_to_head.apply(lambda row: row['awa
 display_head_to_head['Run Total'] = display_head_to_head['away_score'] + display_head_to_head['home_score']
 display_head_to_head['Run Diff'] = abs(display_head_to_head['home_score'] - display_head_to_head['away_score'])
 
-st.subheader("Head-to-Head Results")
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.subheader("Head-to-Head Results")
 st.dataframe(
     display_head_to_head[['game_date', 'away_name', 'home_name', 'Score', 'Winner', 'Run Total', 'Run Diff', 'venue_name']],
     hide_index=True,
