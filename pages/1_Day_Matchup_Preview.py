@@ -85,6 +85,8 @@ except:
 
 #st.table(row[['game_id', 'game_date', 'status', 'away_name', 'home_name', 'away_score', 'home_score', 'home_probable_pitcher', 'away_probable_pitcher']])
 
+col1, col2 = st.columns(2)
+
 st.header('Head to Head Matchups')
 currentHomeAway = st.checkbox('With current home/away?')
 
@@ -107,9 +109,9 @@ home_wins = len(display_head_to_head[display_head_to_head['winning_team'] == hom
 # Display summary statistics
 st.subheader("Summary Statistics")
 col1, col2, col3 = st.columns(3)
-col1.metric("Average Runs per Game", average_runs)
-col2.metric(f"{away_team} Wins", away_wins)
-col3.metric(f"{home_team} Wins", home_wins)
+col1.metric("***Average Runs per Game***", average_runs)
+col2.metric(f"***{away_team} Wins***", away_wins)
+col3.metric(f"***{home_team} Wins***", home_wins)
 
 # Prepare and display the head-to-head dataframe
 display_head_to_head['Score'] = display_head_to_head.apply(lambda row: f"{row['away_score']} - {row['home_score']}", axis=1)
