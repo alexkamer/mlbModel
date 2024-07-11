@@ -87,7 +87,8 @@ except:
 
 col1, col2 = st.columns(2)
 
-st.header('Head to Head Matchups')
+
+st.markdown(f"""<h2 style='text-align: center;'>Head-to-Head Results</h2>""", unsafe_allow_html = True) 
 currentHomeAway = st.checkbox('With current home/away?')
 
 if currentHomeAway:
@@ -119,9 +120,6 @@ display_head_to_head['Winner'] = display_head_to_head.apply(lambda row: row['awa
 display_head_to_head['Run Total'] = display_head_to_head['away_score'] + display_head_to_head['home_score']
 display_head_to_head['Run Diff'] = abs(display_head_to_head['home_score'] - display_head_to_head['away_score'])
 
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    st.subheader("Head-to-Head Results")
 st.dataframe(
     display_head_to_head[['game_date', 'away_name', 'home_name', 'Score', 'Winner', 'Run Total', 'Run Diff', 'venue_name']],
     hide_index=True,
