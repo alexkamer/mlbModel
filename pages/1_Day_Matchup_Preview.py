@@ -89,7 +89,10 @@ col1, col2 = st.columns(2)
 
 
 st.markdown(f"""<h2 style='text-align: center;'>Head-to-Head Results</h2>""", unsafe_allow_html = True) 
-currentHomeAway = st.checkbox('With current home/away?')
+
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    currentHomeAway = st.checkbox('With current home/away?')
 
 if currentHomeAway:
     head_to_head = basic_gamelogs[(basic_gamelogs['away_id'] == away_id) & (basic_gamelogs['home_id'] == home_id)].sort_values(by='game_datetime')
