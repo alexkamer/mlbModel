@@ -17,6 +17,9 @@ def load_data(filepath):
 batter_boxscores = load_data('datasets/complex_batters.csv')
 pitcher_boxscores = load_data('datasets/complex_pitchers.csv')
 predicted_lineups = load_data('datasets/predicted_lineups.csv')
+mlb_team_logo_df = load_data('datasets/MLB_Team_Logos.csv')
+
+
 batter_boxscores = batter_boxscores.sort_values(by='game_datetime')
 pitcher_boxscores = pitcher_boxscores.sort_values(by='game_datetime')
 basic_gamelogs = load_data('datasets/basicGameLogs.csv')
@@ -53,6 +56,9 @@ if game_option:
     game_id = row['game_id'].iloc[0]
     away_team = row['away_name'].iloc[0]
     home_team = row['home_name'].iloc[0]
+    away_logo = mlb_team_logo_df[mlb_team_logo_df['Team'] == row['away_name'].iloc[0]]['Logos'].iloc[0]
+    home_logo = mlb_team_logo_df[mlb_team_logo_df['Team'] == row['home_name'].iloc[0]]['Logos'].iloc[0]
+
     away_id = row['away_id'].iloc[0]
     home_id = row['home_id'].iloc[0]
     game_boxscore = statsapi.boxscore_data(game_id)
@@ -75,8 +81,6 @@ except:
     st.write('Lineups not released yet, predicted lineups:')
     away_lineup = predicted_lineups[str(away_id)].to_list()
     home_lineup = predicted_lineups[str(home_id)].to_list()
-
-
 
 
 #st.table(row[['game_id', 'game_date', 'status', 'away_name', 'home_name', 'away_score', 'home_score', 'home_probable_pitcher', 'away_probable_pitcher']])
@@ -286,26 +290,17 @@ pitchFilter = st.checkbox(label="Filter DataFrames to Road/Home only?")
 
 
 
-def format_pitcher_df(df):
-    df = df[['date', 'Team', 'Opponent', 'away_score', 'home_score', 'winning_team']]
-    df['Result'] = df.apply(lambda row: 'W' if row['winning_team'] == row['Team'] else 'L', axis=1)
-    df['Score'] = df.apply(lambda row: f"{row['away_score']}-{row['home_score']}", axis=1)
-    df['Game'] = df.apply(lambda row: f"{row['Result']} {row['Score']} {'vs' if row['Team'] == row['Opponent'] else '@'} {row['Opponent']}", axis=1)
-    return df[['date', 'Game']]
-
-col1, col2 = st.columns(2)
+col1,col2 = st.columns(2)
 with col1:
-    st.subheader(f"{away_pitcher} Recent Games")
+    st.dataframe
     if pitchFilter:
-        away_df = format_pitcher_df(away_pitcher_df[away_pitcher_df['away_probable_pitcher'] == away_pitcher])
+        st.dataframe(away_pitcher_df[away_pitcher_df['away_probable_pitcher'] == away_pitcher][['winning_team', 'winning_pitcher','Team', 'date', 'Name', 'Opponent', 'away_score', 'home_score']], hide_index=True)
     else:
-        away_df = format_pitcher_df(away_pitcher_df)
-    st.table(away_df.set_index('date'))
+        st.dataframe(away_pitcher_df[['winning_team', 'winning_pitcher','Team', 'date', 'Name', 'Opponent', 'away_score', 'home_score']], hide_index=True)
 
 with col2:
-    st.subheader(f"{home_pitcher} Recent Games")
     if pitchFilter:
-        home_df = format_pitcher_df(home_pitcher_df[home_pitcher_df['home_probable_pitcher'] == home_pitcher])
+        st.dataframe(home_pitcher_df[home_pitcher_df['home_probable_pitcher'] == home_pitcher][['winning_team', 'winning_pitcher','Team', 'date', 'Name', 'Opponent', 'away_score', 'home_score']], hide_index=True)
+
     else:
-        home_df = format_pitcher_df(home_pitcher_df)
-    st.table(home_df.set_index('date'))
+        st.dataframe(home_pitcher_df[['winning_team', 'winning_pitcher','Team', 'date', 'Name', 'Opponent', 'away_score', 'home_score']], hide_index=True)
