@@ -140,12 +140,12 @@ home_wins = sum(1 for game in home_team_l5 if game.startswith('W'))
 
 col1, col2 = st.columns(2)
 with col1:
-    st.subheader(f"![{away_team}]({away_logo}) {away_team} {away_wins}-{numGames - away_wins}")
+    st.markdown(f"<h3><img src='{away_logo}&w=30' style='vertical-align: middle'> {away_team} {away_wins}-{numGames - away_wins}</h3>", unsafe_allow_html=True)
     for game in away_team_l5:
         st.markdown(f"- {game}")
 
 with col2:
-    st.subheader(f"![{home_team}]({home_logo}) {home_team} {home_wins}-{numGames - home_wins}")
+    st.markdown(f"<h3><img src='{home_logo}&w=30' style='vertical-align: middle'> {home_team} {home_wins}-{numGames - home_wins}</h3>", unsafe_allow_html=True)
     for game in home_team_l5:
         st.markdown(f"- {game}")
 
