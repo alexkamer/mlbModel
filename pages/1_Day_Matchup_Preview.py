@@ -140,7 +140,7 @@ home_wins = sum(1 for game in home_team_l5 if game.startswith('W'))
 
 col1, col2 = st.columns(2)
 with col1:
-    st.subheader(f"{away_team} {away_wins}-{numGames - away_wins}")
+    st.subheader(f"![{away_team}]({away_logo}) {away_team} {away_wins}-{numGames - away_wins}")
     for game in away_team_l5:
         st.markdown(f"- {game}")
 
