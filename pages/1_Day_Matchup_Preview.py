@@ -126,27 +126,28 @@ away_wins = 0
 home_wins = 0
 # Edit code here
 
-def create_game_summary(r):
+def create_game_summary(r, mlb_team_logo_df):
     winner = 'W' if r['isWinner'] else 'L'
     homeAway = '@' if r['Team'] == r['away_name'] else 'vs.'
+    opposingPitcher = r['home_probable_pitcher'] if r['Team'] == r['away_name'] else r['away_probable_pitcher']
     return f"{winner} {r['away_score']}-{r['home_score']} {homeAway} {r['Opponent']}"
 
-def display_team_summary(team, wins, games, logo_url):
-    st.subheader(f"![{team}]({logo_url}) {team} {wins}-{games - wins}")
-    for game in games:
-        st.markdown(f"- {game}")
-
-away_team_l5 = [create_game_summary(r) for _, r in away_team_games[:numGames].iterrows()]
-home_team_l5 = [create_game_summary(r) for _, r in home_team_games[:numGames].iterrows()]
+away_team_l5 = [create_game_summary(r, mlb_team_logo_df) for _, r in away_team_games[:numGames].iterrows()]
+home_team_l5 = [create_game_summary(r, mlb_team_logo_df) for _, r in home_team_games[:numGames].iterrows()]
 
 away_wins = sum(1 for game in away_team_l5 if game.startswith('W'))
 home_wins = sum(1 for game in home_team_l5 if game.startswith('W'))
 
 col1, col2 = st.columns(2)
 with col1:
-    display_team_summary(away_team, away_wins, numGames, away_logo)
+    st.subheader(f"{away_team} {away_wins}-{numGames - away_wins}")
+    for game in away_team_l5:
+        st.markdown(f"- {game}")
+
 with col2:
-    display_team_summary(home_team, home_wins, numGames, home_logo)
+    st.subheader(f"{home_team} {home_wins}-{numGames - home_wins}")
+    for game in home_team_l5:
+        st.markdown(f"- {game}")
 
 st.markdown("---")
 
