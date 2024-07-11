@@ -139,12 +139,19 @@ with outer_1:
         }
     )
     for index, row in display_head_to_head.iterrows():
+        away_score = int(row['away_score'])
+        home_score = int(row['home_score'])
+        away_style = 'color: green; font-weight: bold;' if away_score > home_score else ''
+        home_style = 'color: green; font-weight: bold;' if home_score > away_score else ''
+        
         st.markdown(
             f"""
             <div style="display: flex; align-items: center; justify-content: center;">
                 <img src="{mlb_team_logo_df[mlb_team_logo_df['Team'] == row['away_name']]['Logos'].iloc[0]}" style="width: 40px; height: 40px; margin-right: 10px;">
                 <t></t>
-                <span style="font-size: 18px;">{row['away_name']} {row['away_score']} - {row['home_score']} {row['home_name']}</span>
+                <span style="font-size: 18px;">
+                    {row['away_name']} <span style="{away_style}">{away_score}</span> - <span style="{home_style}">{home_score}</span> {row['home_name']}
+                </span>
                 <img src="{mlb_team_logo_df[mlb_team_logo_df['Team'] == row['home_name']]['Logos'].iloc[0]}" style="width: 40px; height: 40px; margin-left: 10px;">
             </div>
             """,
