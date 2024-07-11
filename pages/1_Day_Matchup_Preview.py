@@ -144,7 +144,7 @@ with outer_1:
             f"""
             <div style="display: flex; align-items: center; justify-content: center;">
                 <img src="{mlb_team_logo_df[mlb_team_logo_df['Team'] == row['away_name']]['Logos'].iloc[0]}" style="width: 30px; height: 30px; margin-right: 10px;">
-                <span style="font-size: 18px; font-weight: bold;">{row['away_name']} {row['away_score']} - {row['home_score']} {row['home_name']}</span>
+                <span style="font-size: 18px;">{row['away_name']} {row['away_score']} - {row['home_score']} {row['home_name']}</span>
                 <img src="{mlb_team_logo_df[mlb_team_logo_df['Team'] == row['home_name']]['Logos'].iloc[0]}" style="width: 30px; height: 30px; margin-left: 10px;">
             </div>
             """,
