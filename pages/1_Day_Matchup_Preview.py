@@ -140,9 +140,16 @@ with outer_1:
     )
     st.dataframe(display_head_to_head)
     for index, row in display_head_to_head.iterrows():
-        st.markdown(f"""
-        <h4><img src="{mlb_team_logo_df[mlb_team_logo_df['Team'] == row['away_name']]['Logos'].iloc[0]}" style="width: 5%; height: 5%;">&nbsp&nbsp&nbsp&nbsp<b>{row['away_name']}&nbsp&nbsp&nbsp&nbsp{row['away_score']}-{row['home_score']}&nbsp&nbsp&nbsp&nbsp{row['home_name']}</b>&nbsp&nbsp&nbsp&nbsp<img src="{mlb_team_logo_df[mlb_team_logo_df['Team'] == row['home_name']]['Logos'].iloc[0]}" style="width: 5%; height: 5%;"></h4>
-        """, unsafe_allow_html=True)
+        st.markdown(
+            f"""
+            <div style="display: flex; align-items: center; justify-content: center;">
+                <img src="{mlb_team_logo_df[mlb_team_logo_df['Team'] == row['away_name']]['Logos'].iloc[0]}" style="width: 30px; height: 30px; margin-right: 10px;">
+                <span style="font-size: 18px; font-weight: bold;">{row['away_name']} {row['away_score']} - {row['home_score']} {row['home_name']}</span>
+                <img src="{mlb_team_logo_df[mlb_team_logo_df['Team'] == row['home_name']]['Logos'].iloc[0]}" style="width: 30px; height: 30px; margin-left: 10px;">
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
 with outer_2:
 
