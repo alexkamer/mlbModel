@@ -188,7 +188,10 @@ with outer_2:
     col1, col2 = st.columns(2)
     with col1:
         st.markdown(f"""
-        <h4><img src="{away_logo}" style="width: 10%; height: 10%;"> <b>{away_team} {away_wins}-{numGames - away_wins}</b></h4>
+        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+            <img src="{away_logo}" style="width: 50px; height: 50px; margin-right: 10px;">
+            <h3 style="margin: 0;">{away_team} <span style="font-weight: normal;">({away_wins}-{numGames - away_wins})</span></h3>
+        </div>
         """, unsafe_allow_html=True)
 
 
@@ -201,7 +204,10 @@ with outer_2:
 
     with col2:
         st.markdown(f"""
-        <h4><img src="{home_logo}" style="width: 10%; height: 10%;"> <b>{home_team} {home_wins}-{numGames - home_wins}</b></h4>
+        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+            <img src="{home_logo}" style="width: 50px; height: 50px; margin-right: 10px;">
+            <h3 style="margin: 0;">{home_team} <span style="font-weight: normal;">({home_wins}-{numGames - home_wins})</span></h3>
+        </div>
         """, unsafe_allow_html=True)
 
 
