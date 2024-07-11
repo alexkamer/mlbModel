@@ -188,10 +188,7 @@ with outer_2:
     col1, col2 = st.columns(2)
     with col1:
         st.markdown(f"""
-        <div style="display: flex; align-items: center; margin-bottom: 10px;">
-            <img src="{away_logo}" style="width: 50px; height: 50px; margin-right: 10px;">
-            <h3 style="margin: 0;">{away_team} <span style="font-weight: normal;">({away_wins}-{numGames - away_wins})</span></h3>
-        </div>
+        <h4><img src="{away_logo}" style="width: 10%; height: 10%;"> <b>{away_team} {away_wins}-{numGames - away_wins}</b></h4>
         """, unsafe_allow_html=True)
 
 
@@ -204,10 +201,7 @@ with outer_2:
 
     with col2:
         st.markdown(f"""
-        <div style="display: flex; align-items: center; margin-bottom: 10px;">
-            <img src="{home_logo}" style="width: 50px; height: 50px; margin-right: 10px;">
-            <h3 style="margin: 0;">{home_team} <span style="font-weight: normal;">({home_wins}-{numGames - home_wins})</span></h3>
-        </div>
+        <h4><img src="{home_logo}" style="width: 10%; height: 10%;"> <b>{home_team} {home_wins}-{numGames - home_wins}</b></h4>
         """, unsafe_allow_html=True)
 
 
@@ -348,8 +342,8 @@ with col2:
 
 st.header('Starting Pitcher Preview')
 
-away_pitcher = row['away_probable_pitcher'].iloc[0]
-home_pitcher = row['home_probable_pitcher'].iloc[0]
+away_pitcher = row['away_probable_pitcher']
+home_pitcher = row['home_probable_pitcher']
 
 away_pitcher_df = pitcher_boxscores[(pitcher_boxscores['Name'] == away_pitcher) & (pitcher_boxscores['isStarter']) & (pitcher_boxscores['seasonNumber'] == 2024)].sort_values(by='game_date', ascending=False)
 home_pitcher_df = pitcher_boxscores[(pitcher_boxscores['Name'] == home_pitcher) & (pitcher_boxscores['isStarter']) & (pitcher_boxscores['seasonNumber'] == 2024)].sort_values(by='game_date', ascending=False)
