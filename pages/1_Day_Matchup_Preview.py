@@ -161,8 +161,6 @@ with col1:
         <p>- {game['resultString']} <img src="{game['opponent_logo']}" style="width: 5%; height: 5%;"> </p>
         """, unsafe_allow_html=True)
 
-
-
 with col2:
     st.markdown(f"""
     <h4><img src="{home_logo}" style="width: 10%; height: 10%;"> <b>{home_team} {home_wins}-{numGames - home_wins}</b></h4>
@@ -174,7 +172,7 @@ with col2:
         <p>- {game['resultString']} <img src="{game['opponent_logo']}" style="width: 5%; height: 5%;"> </p>
         """, unsafe_allow_html=True)
 
-st.markdown("---")
+st.divider()
 
 
 
