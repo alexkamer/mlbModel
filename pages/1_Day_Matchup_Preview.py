@@ -85,126 +85,136 @@ except:
 
 #st.table(row[['game_id', 'game_date', 'status', 'away_name', 'home_name', 'away_score', 'home_score', 'home_probable_pitcher', 'away_probable_pitcher']])
 
-col1, col2 = st.columns(2)
+outer_1, outer_2 = st.columns(2)
+
+with outer_1:
+    st.markdown(f"""<h2 style='text-align: center;'>Head-to-Head Results</h2>""", unsafe_allow_html = True) 
+
+    col1, col2 = st.columns(2)
 
 
-st.markdown(f"""<h2 style='text-align: center;'>Head-to-Head Results</h2>""", unsafe_allow_html = True) 
+    with col1:
+        currentHomeAway = st.checkbox('With current home/away?')
 
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    currentHomeAway = st.checkbox('With current home/away?')
+    if currentHomeAway:
+        head_to_head = basic_gamelogs[(basic_gamelogs['away_id'] == away_id) & (basic_gamelogs['home_id'] == home_id)].sort_values(by='game_datetime')
+    else:
+        head_to_head = basic_gamelogs[((basic_gamelogs['away_id'] == away_id) & (basic_gamelogs['home_id'] == home_id) | (basic_gamelogs['away_id'] == home_id) & (basic_gamelogs['home_id'] == away_id))].sort_values(by='game_datetime')
+    with col2:
+        head_to_head_num_games = st.select_slider(options=range(1,len(head_to_head) + 1), label='Select the number of games: ')
 
-if currentHomeAway:
-    head_to_head = basic_gamelogs[(basic_gamelogs['away_id'] == away_id) & (basic_gamelogs['home_id'] == home_id)].sort_values(by='game_datetime')
-else:
-    head_to_head = basic_gamelogs[((basic_gamelogs['away_id'] == away_id) & (basic_gamelogs['home_id'] == home_id) | (basic_gamelogs['away_id'] == home_id) & (basic_gamelogs['home_id'] == away_id))].sort_values(by='game_datetime')
+    head_to_head = head_to_head[::-1]
+    display_head_to_head = head_to_head[['game_date', 'away_name', 'home_name', 'home_probable_pitcher', 'away_probable_pitcher', 'away_score', 'home_score', 'venue_name', 'winning_team']].copy()
+    display_head_to_head = display_head_to_head.head(head_to_head_num_games)
 
-head_to_head_num_games = st.select_slider(options=range(1,len(head_to_head) + 1), label='Select the number of games: ')
+    # Calculate statistics
+    average_runs = round((display_head_to_head['away_score'].sum() + display_head_to_head['home_score'].sum()) / head_to_head_num_games, 2)
+    away_wins = len(display_head_to_head[display_head_to_head['winning_team'] == away_team])
+    home_wins = len(display_head_to_head[display_head_to_head['winning_team'] == home_team])
 
-head_to_head = head_to_head[::-1]
-display_head_to_head = head_to_head[['game_date', 'away_name', 'home_name', 'home_probable_pitcher', 'away_probable_pitcher', 'away_score', 'home_score', 'venue_name', 'winning_team']].copy()
-display_head_to_head = display_head_to_head.head(head_to_head_num_games)
+    # Display summary statistics
+    st.subheader("Summary Statistics")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("***Average Runs per Game***", average_runs)
+    col2.metric(f"***{away_team} Wins***", away_wins)
+    col3.metric(f"***{home_team} Wins***", home_wins)
 
-# Calculate statistics
-average_runs = round((display_head_to_head['away_score'].sum() + display_head_to_head['home_score'].sum()) / head_to_head_num_games, 2)
-away_wins = len(display_head_to_head[display_head_to_head['winning_team'] == away_team])
-home_wins = len(display_head_to_head[display_head_to_head['winning_team'] == home_team])
+    # Prepare and display the head-to-head dataframe
+    display_head_to_head['Score'] = display_head_to_head.apply(lambda row: f"{row['away_score']} - {row['home_score']}", axis=1)
+    display_head_to_head['Winner'] = display_head_to_head.apply(lambda row: row['away_name'] if row['winning_team'] == row['away_name'] else row['home_name'], axis=1)
+    display_head_to_head['Run Total'] = display_head_to_head['away_score'] + display_head_to_head['home_score']
+    display_head_to_head['Run Diff'] = abs(display_head_to_head['home_score'] - display_head_to_head['away_score'])
 
-# Display summary statistics
-st.subheader("Summary Statistics")
-col1, col2, col3 = st.columns(3)
-col1.metric("***Average Runs per Game***", average_runs)
-col2.metric(f"***{away_team} Wins***", away_wins)
-col3.metric(f"***{home_team} Wins***", home_wins)
+    st.dataframe(
+        display_head_to_head[['game_date', 'away_name', 'home_name', 'Score', 'Winner', 'Run Total', 'Run Diff', 'venue_name']],
+        hide_index=True,
+        column_config={
+            "game_date": st.column_config.DateColumn("Date", format="MMM DD, YYYY"),
+            "away_name": "Away Team",
+            "home_name": "Home Team",
+            "Score": st.column_config.Column("Score (Away - Home)"),
+            "Run Total": st.column_config.NumberColumn("Total Runs"),
+            "Run Diff": st.column_config.NumberColumn("Run Difference"),
+            "venue_name": "Venue"
+        }
+    )
+    st.dataframe(display_head_to_head)
+    for index, row in display_head_to_head.iterrows():
+        st.markdown(f"""
+        <h4><img src="{mlb_team_logo_df[mlb_team_logo_df['Team'] == row['away_name']]['Logos'].iloc[0]}" style="width: 5%; height: 5%;">&nbsp&nbsp&nbsp&nbsp<b>{row['away_name']}&nbsp&nbsp&nbsp&nbsp{row['away_score']}-{row['home_score']}&nbsp&nbsp&nbsp&nbsp{row['home_name']}</b>&nbsp&nbsp&nbsp&nbsp<img src="{mlb_team_logo_df[mlb_team_logo_df['Team'] == row['home_name']]['Logos'].iloc[0]}" style="width: 5%; height: 5%;"></h4>
+        """, unsafe_allow_html=True)
 
-# Prepare and display the head-to-head dataframe
-display_head_to_head['Score'] = display_head_to_head.apply(lambda row: f"{row['away_score']} - {row['home_score']}", axis=1)
-display_head_to_head['Winner'] = display_head_to_head.apply(lambda row: row['away_name'] if row['winning_team'] == row['away_name'] else row['home_name'], axis=1)
-display_head_to_head['Run Total'] = display_head_to_head['away_score'] + display_head_to_head['home_score']
-display_head_to_head['Run Diff'] = abs(display_head_to_head['home_score'] - display_head_to_head['away_score'])
+with outer_2:
 
-st.dataframe(
-    display_head_to_head[['game_date', 'away_name', 'home_name', 'Score', 'Winner', 'Run Total', 'Run Diff', 'venue_name']],
-    hide_index=True,
-    column_config={
-        "game_date": st.column_config.DateColumn("Date", format="MMM DD, YYYY"),
-        "away_name": "Away Team",
-        "home_name": "Home Team",
-        "Score": st.column_config.Column("Score (Away - Home)"),
-        "Run Total": st.column_config.NumberColumn("Total Runs"),
-        "Run Diff": st.column_config.NumberColumn("Run Difference"),
-        "venue_name": "Venue"
-    }
-)
+    away_team_games = pitcher_boxscores[(pitcher_boxscores['isStarter']) & (pitcher_boxscores['Team'] == away_team)][::-1]
+    home_team_games = pitcher_boxscores[(pitcher_boxscores['isStarter']) & (pitcher_boxscores['Team'] == home_team)][::-1]
+
+
+
+    numGames = 5
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.header(f"Team's Records in last {numGames} games:")
+    with col2:
+        numGames = st.slider(label='Select the number of games: ', min_value=1, max_value=20, value=5, step=1)
+
+
+    away_team_l5 = []
+    home_team_l5 = []
+
+    away_wins = 0
+    home_wins = 0
+    # Edit code here
+
+    def create_game_summary(r, mlb_team_logo_df):
+        winner = 'W' if r['isWinner'] else 'L'
+        homeAway = '@' if r['Team'] == r['away_name'] else 'vs.'
+        opposingPitcher = r['home_probable_pitcher'] if r['Team'] == r['away_name'] else r['away_probable_pitcher']
+        my_dict = {
+            "resultString" : f"{winner} {r['away_score']}-{r['home_score']} {homeAway} {r['Opponent']}", 
+            'opponent_logo' :mlb_team_logo_df[mlb_team_logo_df['Team'] == r['Opponent']]['Logos'].iloc[0],
+            'opposingPitcher' : opposingPitcher
+            }
+
+        return my_dict
+    away_team_l5 = [create_game_summary(r, mlb_team_logo_df) for _, r in away_team_games[:numGames].iterrows()]
+    home_team_l5 = [create_game_summary(r, mlb_team_logo_df) for _, r in home_team_games[:numGames].iterrows()]
+
+    away_wins = sum(1 for game in away_team_l5 if game['resultString'].startswith('W'))
+    home_wins = sum(1 for game in home_team_l5 if game['resultString'].startswith('W'))
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"""
+        <h4><img src="{away_logo}" style="width: 10%; height: 10%;"> <b>{away_team} {away_wins}-{numGames - away_wins}</b></h4>
+        """, unsafe_allow_html=True)
+
+
+        for game in away_team_l5:
+            st.markdown(f"""
+            <p>- {game['resultString']} with {game['opposingPitcher']}<img src="{game['opponent_logo']}" style="width: 5%; height: 5%;"> </p>
+            """, unsafe_allow_html=True)
+
+
+
+    with col2:
+        st.markdown(f"""
+        <h4><img src="{home_logo}" style="width: 10%; height: 10%;"> <b>{home_team} {home_wins}-{numGames - home_wins}</b></h4>
+        """, unsafe_allow_html=True)
+
+
+        for game in home_team_l5:
+            st.markdown(f"""
+            <p>- {game['resultString']} with {game['opposingPitcher']}<img src="{game['opponent_logo']}" style="width: 5%; height: 5%;"> </p>
+            """, unsafe_allow_html=True)
+
+
 
 st.divider()
 
 
-
-away_team_games = pitcher_boxscores[(pitcher_boxscores['isStarter']) & (pitcher_boxscores['Team'] == away_team)][::-1]
-home_team_games = pitcher_boxscores[(pitcher_boxscores['isStarter']) & (pitcher_boxscores['Team'] == home_team)][::-1]
-
-
-
-numGames = 5
-
-col1, col2 = st.columns(2)
-
-with col1:
-    st.header(f"Team's Records in last {numGames} games:")
-with col2:
-    numGames = st.slider(label='Select the number of games: ', min_value=1, max_value=20, value=5, step=1)
-
-
-away_team_l5 = []
-home_team_l5 = []
-
-away_wins = 0
-home_wins = 0
-# Edit code here
-
-def create_game_summary(r, mlb_team_logo_df):
-    winner = 'W' if r['isWinner'] else 'L'
-    homeAway = '@' if r['Team'] == r['away_name'] else 'vs.'
-    opposingPitcher = r['home_probable_pitcher'] if r['Team'] == r['away_name'] else r['away_probable_pitcher']
-    my_dict = {
-        "resultString" : f"{winner} {r['away_score']}-{r['home_score']} {homeAway} {r['Opponent']}", 
-        'opponent_logo' :mlb_team_logo_df[mlb_team_logo_df['Team'] == r['Opponent']]['Logos'].iloc[0]
-        }
-
-    return my_dict
-away_team_l5 = [create_game_summary(r, mlb_team_logo_df) for _, r in away_team_games[:numGames].iterrows()]
-home_team_l5 = [create_game_summary(r, mlb_team_logo_df) for _, r in home_team_games[:numGames].iterrows()]
-
-away_wins = sum(1 for game in away_team_l5 if game['resultString'].startswith('W'))
-home_wins = sum(1 for game in home_team_l5 if game['resultString'].startswith('W'))
-
-col1, col2 = st.columns(2)
-with col1:
-    st.markdown(f"""
-    <h4><img src="{away_logo}" style="width: 10%; height: 10%;"> <b>{away_team} {away_wins}-{numGames - away_wins}</b></h4>
-    """, unsafe_allow_html=True)
-
-
-    for game in away_team_l5:
-        st.markdown(f"""
-        <p>- {game['resultString']} <img src="{game['opponent_logo']}" style="width: 5%; height: 5%;"> </p>
-        """, unsafe_allow_html=True)
-
-
-
-with col2:
-    st.markdown(f"""
-    <h4><img src="{home_logo}" style="width: 10%; height: 10%;"> <b>{home_team} {home_wins}-{numGames - home_wins}</b></h4>
-    """, unsafe_allow_html=True)
-
-
-    for game in home_team_l5:
-        st.markdown(f"""
-        <p>- {game['resultString']} <img src="{game['opponent_logo']}" style="width: 5%; height: 5%;"> </p>
-        """, unsafe_allow_html=True)
-
-st.markdown("---")
 
 
 
