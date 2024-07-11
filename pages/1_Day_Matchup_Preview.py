@@ -120,19 +120,39 @@ display_head_to_head['Run Total'] = display_head_to_head['away_score'] + display
 display_head_to_head['Run Diff'] = abs(display_head_to_head['home_score'] - display_head_to_head['away_score'])
 
 st.subheader("Head-to-Head Results")
-st.dataframe(
-    display_head_to_head[['game_date', 'away_name', 'home_name', 'Score', 'Winner', 'Run Total', 'Run Diff', 'venue_name']],
-    hide_index=True,
-    column_config={
-        "game_date": st.column_config.DateColumn("Date", format="MMM DD, YYYY"),
-        "away_name": "Away Team",
-        "home_name": "Home Team",
-        "Score": st.column_config.Column("Score (Away - Home)"),
-        "Run Total": st.column_config.NumberColumn("Total Runs"),
-        "Run Diff": st.column_config.NumberColumn("Run Difference"),
-        "venue_name": "Venue"
-    }
-)
+
+html_table = """
+<table style="width:100%; border-collapse: collapse;">
+    <tr style="background-color: #f2f2f2;">
+        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Date</th>
+        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Away Team</th>
+        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Home Team</th>
+        <th style="padding: 12px; text-align: center; border: 1px solid #ddd;">Score</th>
+        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Winner</th>
+        <th style="padding: 12px; text-align: center; border: 1px solid #ddd;">Total Runs</th>
+        <th style="padding: 12px; text-align: center; border: 1px solid #ddd;">Run Difference</th>
+        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Venue</th>
+    </tr>
+"""
+
+for _, row in display_head_to_head.iterrows():
+    winner_color = "#90EE90" if row['Winner'] == row['away_name'] else "#ADD8E6"
+    html_table += f"""
+    <tr>
+        <td style="padding: 12px; text-align: left; border: 1px solid #ddd;">{row['game_date'].strftime('%b %d, %Y')}</td>
+        <td style="padding: 12px; text-align: left; border: 1px solid #ddd;">{row['away_name']}</td>
+        <td style="padding: 12px; text-align: left; border: 1px solid #ddd;">{row['home_name']}</td>
+        <td style="padding: 12px; text-align: center; border: 1px solid #ddd;">{row['Score']}</td>
+        <td style="padding: 12px; text-align: left; border: 1px solid #ddd; background-color: {winner_color};">{row['Winner']}</td>
+        <td style="padding: 12px; text-align: center; border: 1px solid #ddd;">{row['Run Total']}</td>
+        <td style="padding: 12px; text-align: center; border: 1px solid #ddd;">{row['Run Diff']}</td>
+        <td style="padding: 12px; text-align: left; border: 1px solid #ddd;">{row['venue_name']}</td>
+    </tr>
+    """
+
+html_table += "</table>"
+
+st.markdown(html_table, unsafe_allow_html=True)
 
 st.divider()
 
