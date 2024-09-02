@@ -94,8 +94,9 @@ number_of_games = st.select_slider(
     options=range(1,len(common_elements) + 1))
 
 num_same = 0
+
 for index in range(0,number_of_games):
-    if player_1_df[prop_name].to_list()[index] > 0.5 and player_2_df[prop_name].to_list()[index] > 0.5:
+    if player_1_df[prop_name].to_list()[::-1][index] > 0.5 and player_2_df[prop_name].to_list()[::-1][index] > 0.5:
         num_same += 1
 
 st.write(f"{num_same} / {number_of_games}")
