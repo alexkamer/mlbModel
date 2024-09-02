@@ -10,7 +10,6 @@ import math
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import plotly.graph_objects as go
-from PIL import Image
 from io import BytesIO
 from streamlit import session_state as ss
 @st.cache_resource
