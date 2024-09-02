@@ -1,7 +1,6 @@
 import pandas as pd
 from datetime import datetime, timedelta
 import concurrent.futures
-import statsapi
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import numpy as np
 import streamlit as st
